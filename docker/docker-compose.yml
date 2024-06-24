@@ -1,0 +1,16 @@
+version: '4'
+
+name: ros_2_jazzy
+
+services:
+  ros-jazzy-master:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    working_dir: /workspace        
+    volumes:
+      - ../src:/workspace/src/
+    env_file:
+      - ./.env
+    tty: true
+
