@@ -1,0 +1,337 @@
+<sdf version='1.11'>
+  <model name='aerial_drone'>
+    <link name='dummy_link'>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>1.5</mass>
+        <inertia>
+          <ixx>0.020312500000000001</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.045312499999999999</iyy>
+          <iyz>0</iyz>
+          <izz>0.065000000000000002</izz>
+        </inertia>
+      </inertial>
+      <collision name='dummy_link_fixed_joint_lump__base_link_collision'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.59999999999999998 0.40000000000000002 0.050000000000000003</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name='dummy_link_fixed_joint_lump__base_link_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.59999999999999998 0.40000000000000002 0.050000000000000003</size>
+          </box>
+        </geometry>
+        <material>
+          <diffuse>0.125 0.125 0.125 1</diffuse>
+          <ambient>0.125 0.125 0.125 1</ambient>
+        </material>
+      </visual>
+    </link>
+    <joint name='front_left_motor_joint' type='revolute'>
+      <pose relative_to='dummy_link'>-0.29999999999999999 0.20000000000000001 0 0 0 0</pose>
+      <parent>dummy_link</parent>
+      <child>front_left_motor_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <effort>0</effort>
+          <velocity>0</velocity>
+          <lower>-inf</lower>
+          <upper>inf</upper>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='front_left_motor_link'>
+      <pose relative_to='front_left_motor_joint'>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.10000000000000001</mass>
+        <inertia>
+          <ixx>0.00027083333333333338</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.00027083333333333338</iyy>
+          <iyz>0</iyz>
+          <izz>0.00050000000000000012</izz>
+        </inertia>
+      </inertial>
+      <collision name='front_left_motor_link_collision'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.050000000000000003</length>
+            <radius>0.10000000000000001</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name='front_left_motor_link_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.050000000000000003</length>
+            <radius>0.10000000000000001</radius>
+          </cylinder>
+        </geometry>
+        <material>
+          <diffuse>1 1 1 1</diffuse>
+          <ambient>1 1 1 1</ambient>
+        </material>
+      </visual>
+    </link>
+    <joint name='front_right_motor_joint' type='revolute'>
+      <pose relative_to='dummy_link'>0.29999999999999999 0.20000000000000001 0 0 0 0</pose>
+      <parent>dummy_link</parent>
+      <child>front_right_motor_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <effort>0</effort>
+          <velocity>0</velocity>
+          <lower>-inf</lower>
+          <upper>inf</upper>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='front_right_motor_link'>
+      <pose relative_to='front_right_motor_joint'>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.10000000000000001</mass>
+        <inertia>
+          <ixx>0.00027083333333333338</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.00027083333333333338</iyy>
+          <iyz>0</iyz>
+          <izz>0.00050000000000000012</izz>
+        </inertia>
+      </inertial>
+      <collision name='front_right_motor_link_collision'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.050000000000000003</length>
+            <radius>0.10000000000000001</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name='front_right_motor_link_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.050000000000000003</length>
+            <radius>0.10000000000000001</radius>
+          </cylinder>
+        </geometry>
+        <material>
+          <diffuse>1 1 1 1</diffuse>
+          <ambient>1 1 1 1</ambient>
+        </material>
+      </visual>
+    </link>
+    <joint name='rear_left_motor_joint' type='revolute'>
+      <pose relative_to='dummy_link'>-0.29999999999999999 -0.20000000000000001 0 0 0 0</pose>
+      <parent>dummy_link</parent>
+      <child>rear_left_motor_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <effort>0</effort>
+          <velocity>0</velocity>
+          <lower>-inf</lower>
+          <upper>inf</upper>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='rear_left_motor_link'>
+      <pose relative_to='rear_left_motor_joint'>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.10000000000000001</mass>
+        <inertia>
+          <ixx>0.00027083333333333338</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.00027083333333333338</iyy>
+          <iyz>0</iyz>
+          <izz>0.00050000000000000012</izz>
+        </inertia>
+      </inertial>
+      <collision name='rear_left_motor_link_collision'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.050000000000000003</length>
+            <radius>0.10000000000000001</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name='rear_left_motor_link_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.050000000000000003</length>
+            <radius>0.10000000000000001</radius>
+          </cylinder>
+        </geometry>
+        <material>
+          <diffuse>1 1 1 1</diffuse>
+          <ambient>1 1 1 1</ambient>
+        </material>
+      </visual>
+    </link>
+    <joint name='rear_right_motor_joint' type='revolute'>
+      <pose relative_to='dummy_link'>0.29999999999999999 -0.20000000000000001 0 0 0 0</pose>
+      <parent>dummy_link</parent>
+      <child>rear_right_motor_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <effort>0</effort>
+          <velocity>0</velocity>
+          <lower>-inf</lower>
+          <upper>inf</upper>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='rear_right_motor_link'>
+      <pose relative_to='rear_right_motor_joint'>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.10000000000000001</mass>
+        <inertia>
+          <ixx>0.00027083333333333338</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.00027083333333333338</iyy>
+          <iyz>0</iyz>
+          <izz>0.00050000000000000012</izz>
+        </inertia>
+      </inertial>
+      <collision name='rear_right_motor_link_collision'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.050000000000000003</length>
+            <radius>0.10000000000000001</radius>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name='rear_right_motor_link_visual'>
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <length>0.050000000000000003</length>
+            <radius>0.10000000000000001</radius>
+          </cylinder>
+        </geometry>
+        <material>
+          <diffuse>1 1 1 1</diffuse>
+          <ambient>1 1 1 1</ambient>
+        </material>
+      </visual>
+    </link>
+    <joint name='roll_joint' type='revolute'>
+      <pose relative_to='dummy_link'>0 0 0.050000000000000003 0 0 0</pose>
+      <parent>dummy_link</parent>
+      <child>roll_frame</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-1.5700000000000001</lower>
+          <upper>1.5700000000000001</upper>
+          <effort>1000</effort>
+          <velocity>10</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='roll_frame'>
+      <pose relative_to='roll_joint'>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.01</mass>
+        <inertia>
+          <ixx>3.333333333333333e-07</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>3.333333333333333e-07</iyy>
+          <iyz>0</iyz>
+          <izz>5.0000000000000008e-07</izz>
+        </inertia>
+      </inertial>
+    </link>
+    <joint name='pitch_joint' type='revolute'>
+      <pose relative_to='roll_frame'>0 0 0 0 0 0</pose>
+      <parent>roll_frame</parent>
+      <child>pitch_frame</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-1.5700000000000001</lower>
+          <upper>1.5700000000000001</upper>
+          <effort>1000</effort>
+          <velocity>10</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='pitch_frame'>
+      <pose relative_to='pitch_joint'>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.01</mass>
+        <inertia>
+          <ixx>3.333333333333333e-07</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>3.333333333333333e-07</iyy>
+          <iyz>0</iyz>
+          <izz>5.0000000000000008e-07</izz>
+        </inertia>
+      </inertial>
+    </link>
+    <plugin name='gazebo_ros_control' filename='libgazebo_ros_control.so'>
+      <robotNamespace>/</robotNamespace>
+    </plugin>
+    <plugin name='mavlink_interface' filename='libgazebo_mavlink_interface.so'>
+      <robotNamespace>/</robotNamespace>
+      <port>14560</port>
+    </plugin>
+    <frame name='dummy_to_base' attached_to='dummy_link'>
+      <pose>0 0 0 0 0 0</pose>
+    </frame>
+    <frame name='base_link' attached_to='dummy_to_base'>
+      <pose>0 0 0 0 0 0</pose>
+    </frame>
+  </model>
+</sdf>

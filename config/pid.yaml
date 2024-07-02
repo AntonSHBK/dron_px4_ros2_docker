@@ -1,0 +1,10 @@
+gazebo_ros_control:
+  pid_gains:
+      roll_joint:
+        p: 10.0
+        i: 0.01
+        d: 0.5
+      pitch_joint:
+        p: 10.0
+        i: 0.01
+        d: 0.5

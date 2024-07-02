@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<robot name="motor" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include filename="$(find aerial_drone_base)/urdf/common_macro.xacro"/>
+
+<!-- *********************************************************************** -->
+  <!-- Motor macro with joint -->
+  <xacro:macro name="motor" params="name mass length radius color origin">
+    <!-- Joint for motor rotation -->
+    <joint name="${name}_joint" type="continuous">
+      <origin xyz="${origin}" rpy="0 0 0"/> <!-- Set origin, roll-pitch-yaw remains zero -->
+      <parent link="base_link"/>
+      <child link="${name}_link"/>
+      <axis xyz="0 0 1"/> <!-- Assuming rotation around z-axis -->
+      <limit effort="0" velocity="0"/> <!-- No limit on velocity or effort -->
+    </joint>
+
+<!-- *********************************************************************** -->
+    <!-- Motor link -->
+    <link name="${name}_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="${radius}" length="${length}"/>
+        </geometry>
+        <material name='motor_material'>
+          <color rgba="${color}"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="${radius}" length="${length}"/>
+        </geometry>
+      </collision>
+      <xacro:inertial_cylinder mass="${mass}" length="${length}" radius="${radius}"/>
+    </link>
+  </xacro:macro>
+</robot>
