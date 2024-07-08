@@ -1,5 +1,7 @@
 # PX 4
 
+[QGC docker](https://docs.px4.io/main/en/test_and_ci/docker.html)
+
 Вы абсолютно правы, что команда `make px4_sitl_default gazebo_custom_drone` в контексте PX4 связана с симуляцией, но позвольте уточнить детали, чтобы полностью прояснить её значение и функции.
 
 ### Что такое `px4_sitl_default`?

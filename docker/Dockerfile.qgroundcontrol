@@ -1,0 +1,101 @@
+FROM ubuntu:22.04
+
+# **************************************************************************** #
+
+# nvidia-container-runtime
+ENV NVIDIA_VISIBLE_DEVICES \
+    ${NVIDIA_VISIBLE_DEVICES:-all}
+ENV NVIDIA_DRIVER_CAPABILITIES \
+    ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
+
+# **************************************************************************** #
+
+# Установка временной зоны
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN apt-get update && apt-get install -y \
+    wget \
+    tzdata \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get install -y \
+    qtbase5-dev \
+    qtdeclarative5-dev \
+    qtmultimedia5-dev \
+    qtlocation5-dev \
+    libqt5svg5-dev \
+    libsdl2-dev \
+    libpulse-dev \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-libav \
+    gstreamer1.0-gl \
+    gstreamer1.0-gtk3 \
+    gstreamer1.0-qt5 \
+    gstreamer1.0-pulseaudio \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-libav \
+    gstreamer1.0-gl \
+    libfuse2 \
+    libxcb-xinerama0 \
+    libxkbcommon-x11-0 \
+    libxcb-cursor0 \
+    libfontconfig1 \
+    libglu1-mesa \
+    libglu1-mesa-dev \
+    libgl1-mesa-glx \
+    libgl1-mesa-dri \
+    mesa-utils \
+    libpulse0 \
+    libfuse2 \
+    fuse \
+    libpulse-mainloop-glib0 \
+    x11-apps \
+    libx11-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /tmp/runtime-root && export XDG_RUNTIME_DIR=/tmp/runtime-root
+
+WORKDIR /opt
+
+RUN wget https://d176tv9ibo4jno.cloudfront.net/latest/QGroundControl.AppImage -O /opt/QGroundControl.AppImage \
+    && chmod +x /opt/QGroundControl.AppImage  
+
+# **************************************************************************** #
+
+ARG UID=1000
+ARG GID=1000
+
+# Создание нового пользователя и группы, используя UID и GID из env
+ARG GROUPNAME=rosuser
+ARG USER_UID=${UID}
+ARG USER_GID=${GID}
+
+RUN groupadd --gid $USER_GID $GROUPNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $GROUPNAME \
+    && usermod -aG sudo $GROUPNAME
+
+# Установка переменной окружения XDG_RUNTIME_DIR
+ENV XDG_RUNTIME_DIR=/tmp/runtime-$GROUPNAME
+
+# Копирование и изменение прав на директорию qgroundcontrol
+RUN chown -R $GROUPNAME:$GROUPNAME /opt/QGroundControl.AppImage
+
+ENV LD_LIBRARY_PATH="/opt:$LD_LIBRARY_PATH"
+
+# Настройка окружения для X11
+ENV DISPLAY=${DISPLAY}
+
+# Убедитесь, что новый пользователь имеет доступ ко всем необходимым переменным окружения
+RUN echo "alias qgc='/opt/QGroundControl.AppImage'" >> /home/$GROUPNAME/.bashrc
+
+# Переключение на нового пользователя
+USER $GROUPNAME
+
+# **************************************************************************** #
+
+# Координаты Белгорода
+ENV PX4_HOME_LAT=50.5978
+ENV PX4_HOME_LON=36.5853
+ENV PX4_HOME_ALT=150

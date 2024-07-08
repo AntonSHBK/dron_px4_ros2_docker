@@ -2,17 +2,6 @@
 <robot name="dron_macro" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
 <!-- *********************************************************************** -->
-<!-- Macro for cylinder inertial model -->
-<xacro:macro name="cylinder_inertia" params ="m r h">
-  <inertial>
-   <mass value="${m}"/> <!-- Cylinder mass -->
-   <!-- Formulas to calculate inertia moments for cylinder -->
-   <inertia ixx="${m*(3*r*r+h*h)/12}"  ixy="0.0" ixz="0.0"
-            iyy="${m*(3*r*r+h*h)/12}"  iyz="0.0" izz="${m*r*r/2}"/>
-   </inertial>
-</xacro:macro>
-
-<!-- *********************************************************************** -->
 <!-- Macro for base inertial model -->
 <xacro:macro name= "inertial_matrix" params="mass">
   <inertial>
@@ -37,7 +26,7 @@
     </inertial>
 </xacro:macro>  
 
-
+<!-- Macro for box inertial model -->
 <xacro:macro name="inertial_box" params="mass x y z">
     <inertial>
         <mass value="${mass}" />
@@ -47,7 +36,7 @@
     </inertial>
 </xacro:macro>
 
-
+<!-- Macro for cylinder inertial model -->
 <xacro:macro name="inertial_cylinder" params="mass length radius">
     <inertial>
         <mass value="${mass}" /> 

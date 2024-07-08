@@ -1,16 +1,54 @@
-version: '4'
-
-name: ros_2_jazzy
+name: ros_2_humle
 
 services:
-  ros-jazzy-master:
+  ros-humble-master:
+    # mem_limit: 4G  # выделение до 4 гигабайт памяти
+    # cpus: 2.0  # ограничение до двух процессорных ядер   
     build:
       context: ../
-      dockerfile: ./docker/Dockerfile
-    working_dir: /workspace        
+      dockerfile: ./docker/Dockerfile.ros_px4
     volumes:
-      - ../src:/workspace/src/
+      - ./src:/workspace/src
     env_file:
       - ./.env
+    ports:
+      - "14540:14540/udp"  # PX4 MAVLink UDP порт
+      - "8888:8888/udp"    # Micro XRCE-DDS Agent порт
+    networks:
+      - robot_network
     tty: true
+    # command: ["MicroXRCEAgent", "udp4", "-p", "8888"]
 
+  # qgroundcontrol:
+  #   build:
+  #     context: ../
+  #     dockerfile: ./docker/Dockerfile.qgroundcontrol
+  #   env_file:
+  #     - ./.env
+  #   networks:
+  #     - robot_network
+  #   environment:
+  #     - DISPLAY=${DISPLAY}
+  #     - QT_X11_NO_MITSHM=1
+  #     - PX4_HOME_LAT=50.5978
+  #     - PX4_HOME_LON=36.5853
+  #     - PX4_HOME_ALT=150
+  #   volumes:
+  #     - /tmp/.X11-unix:/tmp/.X11-unix:rw
+  #     - /dev/fuse:/dev/fuse
+  #     - /etc/fuse.conf:/etc/fuse.conf
+  #   cap_add:
+  #     - SYS_ADMIN
+  #   devices:
+  #     - /dev/fuse
+  #   security_opt:
+  #     - apparmor:unconfined
+  #   ports:
+  #     - "14540:14540/udp"  # Порт для MAVLink
+  #   tty: true
+  #   command: ["/opt/QGroundControl.AppImage"]
+    
+
+networks:
+  robot_network:
+    driver: bridge

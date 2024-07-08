@@ -92,7 +92,7 @@
   <xacro:motor name="rear_right_motor" mass="${motor_mass}" length="${motor_length}" radius="${motor_radius}" color="${motor_color}" origin="${motor_offset_x} -${motor_offset_y} 0"/>
 
   <gazebo>
-    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+    <plugin name="ros_gz_control" filename="libros_gz_control.so">
         <robotNamespace>/</robotNamespace>
     </plugin>
   </gazebo>

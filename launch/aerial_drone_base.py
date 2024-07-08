@@ -7,7 +7,6 @@ from launch_ros.actions import Node
 from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
 from ament_index_python.packages import get_package_share_directory
-from launch_ros.actions import Node
 
 def generate_launch_description():
     # Arguments
@@ -35,7 +34,7 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 PathJoinSubstitution(
-                    [FindPackageShare("gazebo_ros"), "launch", "gazebo.launch.py"]
+                    [FindPackageShare("ros_gz_sim"), "launch", "gz_sim.launch.py"]
                 )
             ),
         ),
@@ -67,10 +66,10 @@ def generate_launch_description():
         ),
         # Launch spawn_entity to spawn robot in Gazebo
         Node(
-            package="gazebo_ros",
-            executable="spawn_entity.py",
+            package="ros_gz_sim",
+            executable="create",
             arguments=[
-                "-entity", "aerial_drone_base",
+                "-name", "aerial_drone_base",
                 "-topic", "robot_description",
                 "-x", "0.0",  # начальная позиция по X
                 "-y", "0.0",  # начальная позиция по Y
