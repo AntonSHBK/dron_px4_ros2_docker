@@ -17,6 +17,8 @@ make px4_sitl_default gz_x500
 MicroXRCEAgent udp4 -p 8888
 
 reboot now
+
+ros2 topic echo /fmu/out/vehicle_status
 ```
 
 ENV PX4_HOME_LAT=50

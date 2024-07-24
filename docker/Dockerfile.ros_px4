@@ -1,11 +1,6 @@
-# FROM ros:jazzy
-FROM osrf/ros:humble-desktop-full
-# FROM ros:jazzy
+FROM ubuntu:22.04
 
 # **************************************************************************** #
-# set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
 
 # nvidia-container-runtime
 ENV NVIDIA_VISIBLE_DEVICES \
@@ -13,43 +8,43 @@ ENV NVIDIA_VISIBLE_DEVICES \
 ENV NVIDIA_DRIVER_CAPABILITIES \
     ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 # **************************************************************************** #
+
+# Обновляем пакеты и устанавливаем необходимые утилиты
+RUN apt-get update && apt-get install -y \
+    locales \
+    software-properties-common \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN locale-gen en_US en_US.UTF-8 && \
+    update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+
+
+# Устанавливаем язык и добавляем репозитории
+RUN apt-get update && \
+    add-apt-repository universe && \
+    apt-get update
 
 # Development tools
 RUN apt-get update && apt-get install -y \
     cmake \
     build-essential \
-    curl \
     wget \
-    zsh \
     vim \
     git \
     tmux \
     tree \
     && rm -rf /var/lib/apt/lists/*
 
-# **************************************************************************** #
-
-# Install MAVROS and MAVLink
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    git \
-    ros-humble-mavros \
-    ros-humble-mavros-msgs \
-    ros-humble-mavros-extras \
-    ros-humble-mavlink \
-    ros-humble-geographic-msgs \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /opt
-
-# Клонирование репозитория mavlink
-RUN git clone https://github.com/mavlink/mavlink.git --recursive && \
-    python3 -m pip install -r mavlink/pymavlink/requirements.txt
-
-# Настройка переменных окружения
-ENV PATH="$MAVLINK_DIR:${PATH}"
+# Добавляем репозиторий ROS 2 и устанавливаем его
+RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null && \
+    apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y ros-humble-desktop ros-dev-tools
 
 # **************************************************************************** #
 
@@ -64,88 +59,36 @@ RUN git clone https://github.com/eProsima/Micro-XRCE-DDS-Agent.git \
     && make \
     && make install
 
+RUN ldconfig /usr/local/lib/
+
 # **************************************************************************** #
 
 # Install PX4 packages
-# Установка необходимых зависимостей
-RUN apt-get update && apt-get install -y \
-    git \
-    wget \
-    cmake \
-    build-essential \
-    python3 \
-    python3-pip \
-    python3-jinja2 \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /opt
 
 # Клонирование репозитория PX4 и установка (выключить VPN)
-RUN git clone https://github.com/PX4/PX4-Autopilot.git --recursive 
+RUN git clone https://github.com/PX4/PX4-Autopilot.git
+
+RUN cd ./PX4-Autopilot && \
+    git checkout v1.14.0 && \
+    git submodule sync --recursive && \
+    git submodule update --init --recursive
 
 RUN  ./PX4-Autopilot/Tools/setup/ubuntu.sh
 
-RUN apt-get update && apt-get install -y \
-    git \
-    python3 \
-    python3-pip \
-    && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && apt-get install -y \
+#     ros-humble-desktop-full \
+#     ros-humble-simulation \
+#     ros-humble-joint-state-publisher \
+#     ros-humble-ros2-control \
+#     ros-humble-ros2-controllers \
+#     ros-humble-control-toolbox \
+#     ros-humble-realtime-tools \
+#     ros-humble-ros-gz \
+#     ros-humble-xacro \
+#     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade pip && \
-    pip install empy==3.3.4 \
-        pyros-genmsg \
-        setuptools \
-        --break-system-packages && \
-    rm -rf /root/.cache/pip
-
-
-RUN  cd ./PX4-Autopilot && make px4_sitl_default
-
-RUN apt-get update && apt-get install -y \
-    ros-humble-desktop-full \
-    ros-humble-simulation \
-    ros-humble-joint-state-publisher \
-    ros-humble-ros2-control \
-    ros-humble-ros2-controllers \
-    ros-humble-control-toolbox \
-    ros-humble-realtime-tools \
-    ros-humble-ros-gz \
-    ros-humble-xacro \
-    && rm -rf /var/lib/apt/lists/*
-
-# # Настройка переменных окружения
-ENV PATH="/opt/PX4-Autopilot:${PATH}"
-
-# **************************************************************************** #
-
-# Установка необходимых зависимостей
-RUN apt-get update && apt-get install -y \
-    git \
-    python3 \
-    python3-pip \
-    python3-dev \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
-# Установка дополнительных Python библиотек для ArduPilot
-RUN pip3 install future pymavlink MAVProxy --break-system-packages
-
-WORKDIR /opt
-
-# Клонирование репозитория ArduPilot
-RUN git clone https://github.com/ArduPilot/ardupilot.git \
-    && cd ardupilot \
-    && git submodule update --init --recursive
-
-# Установка дополнительных инструментов для сборки ArduPilot
-# RUN cd ardupilot && Tools/environment_install/install-prereqs-ubuntu.sh -y
-# RUN cd ardupilot && Tools/environment_install/install-ROS-ubuntu.sh -y 
-
-# Установка переменных окружения
-ENV PATH="/ardupilot/Tools/autotest:${PATH}"
-ENV PATH="/usr/lib/ccache:${PATH}"
-
-# # **************************************************************************** #
+ # **************************************************************************** #
 
 # Install Python 3 and pip
 RUN apt-get update && apt-get install -y \
@@ -154,22 +97,21 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # install python dependencies
-# COPY ../requirements.txt /tmp/requirements.txt
+COPY ../requirements.txt /tmp/requirements.txt
 
-# RUN pip install --upgrade pip --break-system-packages && \
-#     pip install -r /tmp/requirements.txt --break-system-packages && \
-#     rm -rf /root/.cache/pip
+RUN pip install --upgrade pip && \
+    pip install -r /tmp/requirements.txt  && \
+    rm -rf /root/.cache/pip
 
 # # **************************************************************************** #
 
 # set work directory
 ENV WORKSPACE /workspace/src
-RUN mkdir -p $WORKSPACE
+RUN mkdir -p $WORKSPACE/aerial_drone_base
 WORKDIR $WORKSPACE
 
 # copy project
-COPY . $WORKSPACE
-
+COPY . $WORKSPACE/aerial_drone_base
 # **************************************************************************** #
 
 # Source the ROS 2 setup file for the entry point

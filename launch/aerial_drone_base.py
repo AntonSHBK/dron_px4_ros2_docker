@@ -38,6 +38,7 @@ def generate_launch_description():
                 )
             ),
         ),
+        
         # Launch robot_state_publisher
         Node(
             package='robot_state_publisher',
