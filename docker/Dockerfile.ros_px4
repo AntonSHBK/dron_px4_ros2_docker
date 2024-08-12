@@ -63,8 +63,17 @@ RUN ldconfig /usr/local/lib/
 
 # **************************************************************************** #
 
+# set work directory
+ENV WORKSPACE /workspace/src
+RUN mkdir -p $WORKSPACE/aerial_drone_base
+WORKDIR $WORKSPACE
+
+# copy project
+COPY . $WORKSPACE/aerial_drone_base
+
+# **************************************************************************** #
+
 # Install PX4 packages
-WORKDIR /opt
 
 # Клонирование репозитория PX4 и установка (выключить VPN)
 RUN git clone https://github.com/PX4/PX4-Autopilot.git
@@ -75,6 +84,16 @@ RUN cd ./PX4-Autopilot && \
     git submodule update --init --recursive
 
 RUN  ./PX4-Autopilot/Tools/setup/ubuntu.sh
+
+# **************************************************************************** #
+
+RUN git clone https://github.com/PX4/px4_msgs.git && \
+    git clone https://github.com/PX4/px4_ros_com.git
+
+# RUN colcon build --packages-select px4_msgs && \
+#     colcon build --packages-select px4_ros_com
+
+# **************************************************************************** #
 
 # RUN apt-get update && apt-get install -y \
 #     ros-humble-desktop-full \
@@ -103,16 +122,7 @@ RUN pip install --upgrade pip && \
     pip install -r /tmp/requirements.txt  && \
     rm -rf /root/.cache/pip
 
-# # **************************************************************************** #
 
-# set work directory
-ENV WORKSPACE /workspace/src
-RUN mkdir -p $WORKSPACE/aerial_drone_base
-WORKDIR $WORKSPACE
-
-# copy project
-COPY . $WORKSPACE/aerial_drone_base
-# **************************************************************************** #
 
 # Source the ROS 2 setup file for the entry point
 RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc

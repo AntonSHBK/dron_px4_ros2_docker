@@ -4,11 +4,15 @@
 
 colcon build --packages-select aerial_drone_base
 
+colcon build --packages-select px4_msgs px4_ros_com
+
 ros2 launch aerial_drone_base aerial_drone_base.py
 
 ign gazebo
 
 make px4_sitl_default gz_x500
+
+ros2 launch px4_ros_com sensor_combined_listener.launch.py
 
 /opt/qgroundcontrol/squashfs-root/AppRun
 

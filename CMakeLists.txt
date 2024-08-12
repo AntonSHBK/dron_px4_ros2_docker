@@ -18,8 +18,10 @@ find_package(urdf REQUIRED)
 find_package(xacro REQUIRED)
 find_package(robot_state_publisher REQUIRED)
 find_package(rviz2 REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(px4_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
@@ -39,10 +41,19 @@ ament_target_dependencies(
   std_msgs
 )
 
+# Install Python modules
 install(
-  TARGETS dron_base
-  DESTINATION lib/${PROJECT_NAME}
+  PROGRAMS scripts/control.py
+  PROGRAMS scripts/visualizer.py
+  PROGRAMS scripts/processes.py
+  PROGRAMS scripts/velocity_control.py
+  DESTINATION lib/${PROJECT_NAME}  # Указываем путь установки
 )
+
+# install(
+#   TARGETS dron_base
+#   DESTINATION lib/${PROJECT_NAME}
+# )
 
 # Install launch files
 install(DIRECTORY launch
