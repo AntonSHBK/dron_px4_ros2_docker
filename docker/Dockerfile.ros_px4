@@ -37,6 +37,8 @@ RUN apt-get update && apt-get install -y \
     git \
     tmux \
     tree \
+    gnome-terminal \
+    dbus-x11 \    
     && rm -rf /var/lib/apt/lists/*
 
 # Добавляем репозиторий ROS 2 и устанавливаем его

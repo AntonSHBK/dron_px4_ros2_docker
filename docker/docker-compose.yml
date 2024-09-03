@@ -2,8 +2,8 @@ name: aerial_drone
 
 services:
   ros-humble-master:
-    # mem_limit: 4G  # выделение до 4 гигабайт памяти
-    # cpus: 2.0  # ограничение до двух процессорных ядер   
+    mem_limit: 4G  # выделение до 4 гигабайт памяти
+    cpus: 2.0  # ограничение до двух процессорных ядер   
     build:
       context: ../
       dockerfile: ./docker/Dockerfile.ros_px4

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+# !/usr/bin/env python3
 
 import os
 from launch import LaunchDescription
@@ -10,7 +10,7 @@ from ament_index_python.packages import get_package_share_directory
 def generate_launch_description():
     
     # Название пакета
-    pkg_name = 'delta_robot_ros2'
+    pkg_name = 'aerial_drone_base'
     
     pkg_share = get_package_share_directory(pkg_name)
     
@@ -30,39 +30,40 @@ def generate_launch_description():
     )
     
     visualizer_node = Node(
-        package='delta_robot_ros2',
-        namespace='delta_robot_ros2',
-        executable='visualizer',
+        package='aerial_drone_base',
+        namespace='aerial_drone_base',
+        executable='visualizer.py',
         name='visualizer'
     )
     
     processes_node = Node(
-        package='delta_robot_ros2',
-        namespace='delta_robot_ros2',
-        executable='processes',
+        package=pkg_name,
+        namespace='aerial_drone_base',
+        executable='processes.py',
         name='processes',
-        prefix='tmux new-session -d -s mysession "bash -c \'',  # Создание новой сессии tmux и выполнение команды
+        output='screen',
     )
     
     control_node = Node(
-        package='delta_robot_ros2',
-        namespace='delta_robot_ros2',
-        executable='control',
+        package='aerial_drone_base',
+        namespace='aerial_drone_base',
+        executable='control.py',
         name='control',
-        prefix='tmux new-window -t mysession:1 "bash -c \'',  # Создание нового окна tmux в существующей сессии
+        prefix="gnome-terminal --",
     )
     
     velocity_node = Node(
-        package='delta_robot_ros2',
-        namespace='delta_robot_ros2',
-        executable='velocity_control',
-        name='velocity'
+        package='aerial_drone_base',
+        namespace='aerial_drone_base',
+        executable='velocity_control.py',
+        name='velocity',
+        prefix="gnome-terminal --",
     )
     
     # Список нод
     nodes = [
-        rviz_node,
-        visualizer_node,
+        # rviz_node,
+        # visualizer_node,
         processes_node,
         control_node,
         velocity_node,

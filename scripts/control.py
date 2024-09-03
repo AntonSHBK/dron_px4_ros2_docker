@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import sys
 
 import geometry_msgs.msg  # Импортируем сообщения для задания геометрических данных (скорости)
@@ -16,19 +17,29 @@ else:
 
 # Сообщение, которое выводится при запуске программы
 msg = """
-This node takes keypresses from the keyboard and publishes them
+This node takes key presses from the keyboard and publishes them
 as Twist messages. 
-Using the arrow keys and WASD you have Mode 2 RC controls.
+Using the arrow keys and WASD, you can control the drone.
+
+Controls:
 W: Up
 S: Down
 A: Yaw Left
 D: Yaw Right
-Up Arrow: Pitch Forward
-Down Arrow: Pitch Backward
+Up Arrow: Forward
+Down Arrow: Backward
 Left Arrow: Roll Left
 Right Arrow: Roll Right
 
-Press SPACE to arm/disarm the drone
+Space: Arm/Disarm the drone
+
+Speed adjustments:
+Q: Increase linear and angular speed
+Z: Decrease linear and angular speed
+E: Increase angular speed
+C: Decrease angular speed
+
+Press CTRL+C to exit
 """
 
 # Словарь для сопоставления клавиш с командами движения
