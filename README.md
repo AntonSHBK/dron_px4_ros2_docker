@@ -1,50 +1,86 @@
-# Проект управления БПЛА с использованием QGroundControl
-
+# Aerial Drone Control with ROS 2 and PX4
 Этот проект предоставляет средства для управления беспилотными летательными аппаратами (БПЛА) с использованием QGroundControl через Docker. QGroundControl предоставляет мощный и гибкий интерфейс для планирования миссий, мониторинга полётов и настройки параметров БПЛА в реальном времени.
 
-## Начало работы
+## Overview
 
-### Предварительные требования
+This project provides a ROS 2 interface for controlling a drone using the PX4 autopilot in offboard mode. It includes nodes for keyboard control, offboard control, visualization, and more. The setup is primarily designed for simulation with PX4 SITL (Software In The Loop) and can be extended for use with real drones.
 
-Убедитесь, что у вас установлен Docker. Инструкции по установке Docker для различных операционных систем можно найти на официальном [сайте Docker](https://docs.docker.com/get-docker/).
+## Installation
 
-### Установка и запуск
-
-1. Клонируйте репозиторий:
+1. **Clone the Repository**:
    ```bash
-   git clone https://your-repository-url
-   cd your-project-directory
+   git clone https://github.com/AntonSHBK/aerial_drone_base
+   cd aerial_drone_base/docker
+
    ```
 
-2. Соберите Docker образ:
-   ```bash
-   docker build -t qgroundcontrol-docker .
    ```
 
-3. Запустите QGroundControl через Docker:
+2. **Build the Workspace**:
    ```bash
-   docker run --rm -it \
-      -e DISPLAY=$DISPLAY \
-      -v /tmp/.X11-unix:/tmp/.X11-unix \
-      qgroundcontrol-docker
+   colcon build --packages-select px4_msgs px4_ros_com
+   colcon build --packages-select aerial_drone_base
    ```
 
-   Обратите внимание: этот пример предназначен для систем на базе UNIX с графическим интерфейсом X11. Для Windows или других систем настройка может отличаться.
+3. **Source the Workspace**:
+   ```bash
+   source install/setup.bash
+   ```
 
-## Ресурсы
+## Launching the Drone
 
-- [Официальный сайт QGroundControl](https://qgroundcontrol.com/)
-- [Репозиторий QGroundControl на GitHub](https://github.com/mavlink/qgroundcontrol)
-- [Документация QGroundControl](https://docs.qgroundcontrol.com/master/en/)
+### Start the ROS 2 Nodes
 
-## Поддержка
+Launch the ROS 2 nodes required for controlling the drone:
+```bash
+ros2 launch aerial_drone_base aerial_drone_base.py
+```
 
-Если у вас возникли вопросы или проблемы, вы можете искать ответы в [разделе Issues](https://github.com/mavlink/qgroundcontrol/issues) на GitHub или создать новый тикет, если ваша проблема ещё не обсуждалась.
+This launch file will start the following nodes:
+- **processes_node**: Manages different background processes such as the PX4 SITL simulation.
+- **control_node**: Handles the offboard control and sends commands to PX4.
+- **velocity_node**: Manages the drone's velocity commands.
+- **visualizer_node**: Provides visualization tools for Rviz.
 
-## Лицензия
+## Keyboard Controls
 
-Этот проект распространяется под лицензией [специфицируйте тип лицензии], полный текст которой можно найти в файле LICENSE в корне репозитория.
+Use the following keys to control the drone:
 
-## Контрибуции
+- **W**: Move Up
+- **S**: Move Down
+- **A**: Yaw Left
+- **D**: Yaw Right
+- **Up Arrow**: Pitch Forward
+- **Down Arrow**: Pitch Backward
+- **Left Arrow**: Roll Left
+- **Right Arrow**: Roll Right
 
-Мы приветствуем вклад в проект, будь то исправления ошибок, дополнения к документации или новые функции. Пожалуйста, смотрите файл CONTRIBUTING.md для деталей процесса подачи pull requests.
+### Speed Adjustments:
+- **Q**: Increase linear and angular speed
+- **Z**: Decrease linear and angular speed
+- **E**: Increase angular speed only
+- **C**: Decrease angular speed only
+
+### Arm/Disarm:
+- **Space**: Arm or disarm the drone
+
+### Exit:
+- **CTRL+C**: Exit the teleop node
+
+## Troubleshooting
+
+- If the drone doesn't respond to commands, ensure that the PX4 is running properly and that the nodes are correctly launched.
+- Check the ROS 2 topics to ensure messages are being published correctly:
+  ```bash
+  ros2 topic list
+  ```
+- Monitor logs for any errors or warnings.
+
+## Additional Information
+
+- **PX4 Documentation**: [https://docs.px4.io/](https://docs.px4.io/)
+- **ROS 2 Documentation**: [https://docs.ros.org/en/humble/](https://docs.ros.org/en/humble/)
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
