@@ -14,8 +14,6 @@ This project provides a ROS 2 interface for controlling a drone using the PX4 au
 
    ```
 
-   ```
-
 2. **Build the Workspace**:
    ```bash
    colcon build --packages-select px4_msgs px4_ros_com
@@ -77,6 +75,8 @@ Use the following keys to control the drone:
 - Monitor logs for any errors or warnings.
 
 ## Additional Information
+
+It's important to ensure that the PX4 versions are consistent across all components of your system. When working with px4_msgs and px4_ros_com, it's essential to use the same version as the PX4 firmware, such as 1.14. Mismatched versions can lead to compatibility issues, affecting communication between the ROS 2 nodes and the PX4 autopilot. Make sure to check out the correct branches or tags in the repositories to align with your PX4 firmware version.
 
 - **PX4 Documentation**: [https://docs.px4.io/](https://docs.px4.io/)
 - **ROS 2 Documentation**: [https://docs.ros.org/en/humble/](https://docs.ros.org/en/humble/)

@@ -61,56 +61,124 @@ class OffboardControl(Node):
             depth=1
         )
 
-        # Создаем подписки на необходимые топики
+        # Создаем подписку на топик /fmu/out/vehicle_status, который содержит информацию о статусе дрона.
+        # Этот топик публикует сообщения типа VehicleStatus, такие как текущее состояние навигации и арминга.
         self.status_sub = self.create_subscription(
             VehicleStatus,
             '/fmu/out/vehicle_status',
-            self.vehicle_status_callback,
-            qos_profile)
-        
+            self.vehicle_status_callback,  # Функция-обработчик для сообщений VehicleStatus
+            qos_profile  # Профиль качества сервиса (QoS) для подписки
+        )
+
+        # Создаем подписку на топик /offboard_velocity_cmd, который используется для получения команд скорости в offboard-режиме.
+        # Сообщения типа Twist содержат линейные и угловые скорости для управления движением дрона.
         self.offboard_velocity_sub = self.create_subscription(
             Twist,
             '/offboard_velocity_cmd',
-            self.offboard_velocity_callback,
-            qos_profile)
-        
+            self.offboard_velocity_callback,  # Функция-обработчик для сообщений Twist
+            qos_profile
+        )
+
+        # Создаем подписку на топик /fmu/out/vehicle_attitude, который содержит информацию о текущей ориентации дрона (углы наклона, рыскания и т.д.).
+        # Сообщения типа VehicleAttitude помогают отслеживать ориентацию дрона во время полета.
         self.attitude_sub = self.create_subscription(
             VehicleAttitude,
             '/fmu/out/vehicle_attitude',
-            self.attitude_callback,
-            qos_profile)
-        
+            self.attitude_callback,  # Функция-обработчик для сообщений VehicleAttitude
+            qos_profile
+        )
+
+        # Создаем подписку на топик /arm_message, который принимает команды арминга/разарминга дрона.
+        # Сообщения типа Bool используются для переключения состояния дрона между армированным (True) и разарминным (False).
         self.my_bool_sub = self.create_subscription(
             Bool,
             '/arm_message',
-            self.arm_message_callback,
-            qos_profile)
+            self.arm_message_callback,  # Функция-обработчик для сообщений Bool (арминга/разарминга)
+            qos_profile
+        )
 
-        # Создаем издателей для публикации команд и режимов управления
-        self.publisher_offboard_mode = self.create_publisher(OffboardControlMode, '/fmu/in/offboard_control_mode', qos_profile)
-        self.publisher_velocity = self.create_publisher(Twist, '/fmu/in/setpoint_velocity/cmd_vel_unstamped', qos_profile)
-        self.publisher_trajectory = self.create_publisher(TrajectorySetpoint, '/fmu/in/trajectory_setpoint', qos_profile)
-        self.vehicle_command_publisher_ = self.create_publisher(VehicleCommand, "/fmu/in/vehicle_command", 10)
+        # Создаем издателя для публикации команд управления режимом offboard на топик /fmu/in/offboard_control_mode.
+        # Сообщения типа OffboardControlMode позволяют переключать дрон в offboard-режим управления, когда команда отправляется извне.
+        self.publisher_offboard_mode = self.create_publisher(
+            OffboardControlMode,
+            '/fmu/in/offboard_control_mode',
+            qos_profile  # Профиль QoS для публикации сообщений
+        )
+
+        # Создаем издателя для публикации команд скорости (Twist) на топик /fmu/in/setpoint_velocity/cmd_vel_unstamped.
+        # Этот топик используется для отправки команд скорости в offboard-режиме.
+        self.publisher_velocity = self.create_publisher(
+            Twist,
+            '/fmu/in/setpoint_velocity/cmd_vel_unstamped',
+            qos_profile
+        )
+
+        # Создаем издателя для публикации сообщений о траектории (TrajectorySetpoint) на топик /fmu/in/trajectory_setpoint.
+        # Сообщения TrajectorySetpoint задают целевые скорости, позиции и ориентацию дрона для управления движением.
+        self.publisher_trajectory = self.create_publisher(
+            TrajectorySetpoint,
+            '/fmu/in/trajectory_setpoint',
+            qos_profile
+        )
+
+        # Создаем издателя для отправки общих команд управления дроном (VehicleCommand) на топик /fmu/in/vehicle_command.
+        # Эти команды включают арминга, взлета, посадки и другие действия дрона.
+        self.vehicle_command_publisher_ = self.create_publisher(
+            VehicleCommand,
+            "/fmu/in/vehicle_command",
+            10  # Глубина очереди для QoS (определяет количество сообщений, которые могут находиться в очереди на отправку)
+        )
 
         # Создаем таймер для периодической отправки команд на армирование
-        arm_timer_period = 2 # seconds
+        arm_timer_period = 1 # seconds
         self.arm_timer_ = self.create_timer(arm_timer_period, self.arm_timer_callback)
 
         # Создаем таймер для цикла управления дроном
-        timer_period = 2 # seconds
+        timer_period = 1 # seconds
         self.timer = self.create_timer(timer_period, self.cmdloop_callback)
 
         # Инициализируем переменные состояния дрона и управления
+
+        # Текущее состояние навигации дрона. Устанавливаем его в максимальное значение NAVIGATION_STATE_MAX для начала.
+        # Это состояние будет обновляться при получении информации от VehicleStatus.
         self.nav_state = VehicleStatus.NAVIGATION_STATE_MAX
+
+        # Текущее состояние арминга дрона. Устанавливаем в ARMING_STATE_ARMED как стартовое значение.
+        # Это значение будет обновляться по мере изменения статуса арминга дрона (например, при армировании/разарминге).
         self.arm_state = VehicleStatus.ARMING_STATE_ARMED
+
+        # Вектор для хранения текущей скорости дрона по осям X, Y и Z.
+        # Используется для задания линейных скоростей при движении дрона.
         self.velocity = Vector3()
-        self.yaw = 0.0  # Заданное значение угла рыскания
-        self.trueYaw = 0.0  # Текущее значение угла рыскания дрона
+
+        # Переменная для хранения заданного значения угла рыскания (yaw).
+        # Этот угол управляет вращением дрона вокруг вертикальной оси.
+        self.yaw = 0.0
+
+        # Переменная для хранения текущего реального угла рыскания дрона.
+        # Это значение будет получено из сообщений VehicleAttitude.
+        self.trueYaw = 0.0
+
+        # Флаг, указывающий, находится ли дрон в offboard-режиме.
+        # Offboard-режим позволяет внешним командам управлять движением дрона.
         self.offboardMode = False
+
+        # Флаг для проверки выполнения предварительных условий для полета (flight checks).
+        # Это может включать проверку сенсоров, состояния дрона и других систем перед взлетом.
         self.flightCheck = False
+
+        # Счетчик команд, используемый для отслеживания количества отправленных команд или состояния выполнения.
+        # Может использоваться для временного отслеживания состояний, таких как ожидание успешного арминга.
         self.myCnt = 0
+
+        # Переменная, указывающая, включен ли арминг дрона (True) или выключен (False).
+        # Это значение будет управляться через топик /arm_message.
         self.arm_message = False
+
+        # Флаг для активации failsafe-режима, если возникнет ошибка или сбой.
+        # Failsafe используется для предотвращения опасных ситуаций (например, когда теряется управление дроном).
         self.failsafe = False
+
 
         # Определяем состояния и соответствующие функции, которые вызываются при смене состояния
         self.states = {
@@ -195,7 +263,7 @@ class OffboardControl(Node):
     # Функция для состояния TAKEOFF
     def state_takeoff(self):
         self.myCnt = 0
-        self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_TAKEOFF, param1=1.0, param7=5.0)  # param7 - высота в метрах
+        self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_TAKEOFF, param1=1.0, param7=5)  # param7 - высота в метрах
         self.get_logger().info("Sending takeoff command")
 
     # Функция для состояния LOITER
@@ -223,18 +291,19 @@ class OffboardControl(Node):
     # Публикует команду на топик /fmu/in/vehicle_command
     def publish_vehicle_command(self, command, param1=0.0, param2=0.0, param7=0.0):
         msg = VehicleCommand()
-        msg.param1 = param1
-        msg.param2 = param2
-        msg.param7 = param7  # Значение высоты для команды на взлет
-        msg.command = command  # ID команды
-        msg.target_system = 1  # Система, которая должна выполнить команду
-        msg.target_component = 1  # Компонент, который должен выполнить команду
-        msg.source_system = 1  # Система, отправляющая команду
-        msg.source_component = 1  # Компонент, отправляющий команду
-        msg.from_external = True
-        msg.timestamp = int(Clock().now().nanoseconds / 1000)  # Время в микросекундах
-        self.vehicle_command_publisher_.publish(msg)
-        self.get_logger().info(f"Published VehicleCommand: command={command}, param1={param1}, param2={param2}, param7={param7}")
+        msg.param1 = param1  # Первичный параметр команды. Его значение зависит от типа команды (например, для команды армирования это может быть 1.0 для арма и 0.0 для дизарма)
+        msg.param2 = param2  # Вторичный параметр команды. Используется в некоторых командах для дополнительной информации (например, для некоторых команд это может быть направление или время)
+        msg.param7 = param7  # Значение высоты для команды на взлет (например, при взлете указывает желаемую высоту в метрах)
+        msg.command = command  # ID команды (например, команда армирования, взлета, перехода в Offboard и т.д.)
+        msg.target_system = 1  # Система, которая должна выполнить команду (обычно 1 для основного контроллера)
+        msg.target_component = 1  # Компонент, который должен выполнить команду (обычно 1 для основного компонента)
+        msg.source_system = 1  # Система, отправляющая команду (указываем 1, если команда отправляется с основного контроллера)
+        msg.source_component = 1  # Компонент, отправляющий команду (обычно 1)
+        msg.from_external = True  # Флаг, показывающий, что команда отправлена извне
+        msg.timestamp = int(Clock().now().nanoseconds / 1000)  # Время отправки команды в микросекундах
+        self.vehicle_command_publisher_.publish(msg)  # Публикация команды
+        # self.get_logger().info(f"Published VehicleCommand: command={command}, param1={param1}, param2={param2}, param7={param7}")
+
 
     # Callback-функция для получения и установки значений статуса дрона
     def vehicle_status_callback(self, msg):
@@ -277,7 +346,7 @@ class OffboardControl(Node):
                                    1.0 - 2.0 * (orientation_q[0] * orientation_q[0] + orientation_q[1] * orientation_q[1])))
 
         # self.get_logger().info(f"Received attitude: trueYaw={self.trueYaw}")
-
+        
     # Callback-функция для публикации режимов управления Offboard и скорости в качестве точек траектории
     def cmdloop_callback(self):
         if self.offboardMode:

@@ -66,7 +66,7 @@ def generate_launch_description():
         # visualizer_node,
         processes_node,
         control_node,
-        velocity_node,
+        # velocity_node,
     ]
     
     return LaunchDescription(nodes)

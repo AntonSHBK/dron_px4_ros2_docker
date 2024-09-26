@@ -33,5 +33,6 @@ docker inspect -f ros_2_humle-ros-humble-master-1
 
 export PX4_SIM_HOSTNAME=172.26.176.1
 
+Обязательно проверить версии PX4 и px4_msg
 
 ```
