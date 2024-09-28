@@ -60,19 +60,25 @@ def generate_launch_description():
         prefix="gnome-terminal --",
     )
     
+    inform_node = Node(
+        package='aerial_drone_base',
+        namespace='aerial_drone_base',
+        executable='inform_node.py',
+        name='inform',
+        prefix="gnome-terminal --",
+    )
+    
     # Список нод
     nodes = [
-        # rviz_node,
-        # visualizer_node,
+        rviz_node,
+        visualizer_node,
         processes_node,
         control_node,
-        # velocity_node,
+        velocity_node,
+        inform_node
     ]
     
     return LaunchDescription(nodes)
 
 if __name__ == "__main__":
     generate_launch_description()
-
-
-# tmux attach-session -t mysession

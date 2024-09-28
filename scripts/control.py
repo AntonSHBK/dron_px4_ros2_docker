@@ -35,6 +35,10 @@ E: Увеличить угловую скорость
 C: Уменьшить угловую скорость
 
 Нажмите CTRL+C для выхода
+
+
+
+
 """
 
 # Команды движения, сопоставленные с клавишами
@@ -70,7 +74,7 @@ def getKey(settings):
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)  # Возвращаем настройки терминала
     return key
 
-# Сохранение настроек терминала (Unix)
+# Сохранение настроек терминала (Uniёx)
 def saveTerminalSettings():
     if sys.platform == 'win32':
         return None
@@ -79,13 +83,13 @@ def saveTerminalSettings():
 # Восстановление настроек терминала (Unix)
 def restoreTerminalSettings(old_settings):
     if sys.platform == 'win32':
-        return
+        return None
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
 
 # Функция для отображения текущих скоростей и состояния (переписывание нескольких строк)
 def print_status(speed, turn, arm_state, twist):
     # Очищаем 5 строк перед выводом новой информации
-    print("\033[5F\033[J", end="")  # Очищаем последние 5 строк перед выводом обновлений
+    print("\033[3F\033[J", end="")
     status_message = (
         f"Текущие параметры:\n"
         f"Скорость: {speed:.2f}\tПоворот: {turn:.2f}\tАрмирование: {'Включено' if arm_state else 'Отключено'}\n"
