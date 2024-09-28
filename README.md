@@ -7,6 +7,12 @@ This project provides a ROS 2 interface for controlling a drone using the PX4 au
 
 ![Intro](media/intro.gif)
 
+The project was inspired by the following sources:
+- [px4-offboard by Jaeyoung Lim](https://github.com/Jaeyoung-Lim/px4-offboard)
+- [ROS2 PX4 Offboard Example by ARK Electronics](https://github.com/ARK-Electronics/ROS2_PX4_Offboard_Example)
+
+## Installation
+
 ## Installation
 
 1. **Clone the Repository**:
