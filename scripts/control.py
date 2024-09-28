@@ -1,173 +1,172 @@
 #!/usr/bin/env python3
 
 import sys
+import geometry_msgs.msg  # Сообщения для управления скоростью
+import rclpy  # Основная библиотека для работы с ROS 2
+import std_msgs.msg  # Стандартные сообщения ROS
 
-import geometry_msgs.msg  # Импортируем сообщения для задания геометрических данных (скорости)
-import rclpy  # Импортируем библиотеку для работы с ROS 2
-import std_msgs.msg  # Импортируем стандартные сообщения ROS
+from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy, QoSDurabilityPolicy
 
-from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy, QoSDurabilityPolicy  # Импортируем настройки QoS (качество сервиса) для публикации сообщений
-
-# Проверяем операционную систему, чтобы выбрать соответствующий модуль для обработки ввода с клавиатуры
+# Определяем работу с клавиатурой для разных операционных систем
 if sys.platform == 'win32':
-    import msvcrt  # Модуль для работы с консолью на Windows
+    import msvcrt  # Для Windows
 else:
-    import termios  # Модуль для работы с терминалом на Unix-подобных системах
-    import tty  # Модуль для управления настройками терминала на Unix
+    import termios  # Для Unix
+    import tty  # Для Unix
 
-# Сообщение, которое выводится при запуске программы
+# Инструкция для управления дроном
 msg = """
-This node takes key presses from the keyboard and publishes them
-as Twist messages. 
-Using the arrow keys and WASD, you can control the drone.
+Управление дроном через клавиатуру:
 
-Controls:
-W: Up
-S: Down
-A: Yaw Left
-D: Yaw Right
-Up Arrow: Forward
-Down Arrow: Backward
-Left Arrow: Roll Left
-Right Arrow: Roll Right
+W: Вверх
+S: Вниз
+A: Рыскание влево
+D: Рыскание вправо
+Стрелка вверх: Вперёд
+Стрелка вниз: Назад
+Стрелка влево: Ролл влево
+Стрелка вправо: Ролл вправо
 
-Space: Arm/Disarm the drone
+Пробел: Армирование/Дезармирование дрона
 
-Speed adjustments:
-Q: Increase linear and angular speed
-Z: Decrease linear and angular speed
-E: Increase angular speed
-C: Decrease angular speed
+Q: Увеличить линейную и угловую скорость
+Z: Уменьшить линейную и угловую скорость
+E: Увеличить угловую скорость
+C: Уменьшить угловую скорость
 
-Press CTRL+C to exit
+Нажмите CTRL+C для выхода
 """
 
-# Словарь для сопоставления клавиш с командами движения
+# Команды движения, сопоставленные с клавишами
 moveBindings = {
-    'w': (0, 0, 1, 0),  # Движение по оси Z вверх
-    's': (0, 0, -1, 0), # Движение по оси Z вниз
-    'a': (0, 0, 0, -1), # Вращение (Yaw) влево
-    'd': (0, 0, 0, 1),  # Вращение (Yaw) вправо
-    '\x1b[A' : (0, 1, 0, 0),  # Вперёд по оси Y (стрелка вверх)
-    '\x1b[B' : (0, -1, 0, 0), # Назад по оси Y (стрелка вниз)
-    '\x1b[C' : (-1, 0, 0, 0), # Вправо по оси X (стрелка вправо)
-    '\x1b[D' : (1, 0, 0, 0),  # Влево по оси X (стрелка влево)
+    'w': (0, 0, 1, 0),
+    's': (0, 0, -1, 0),
+    'a': (0, 0, 0, -1),
+    'd': (0, 0, 0, 1),
+    '\x1b[A': (0, 1, 0, 0),  # Вперёд
+    '\x1b[B': (0, -1, 0, 0),  # Назад
+    '\x1b[C': (-1, 0, 0, 0),  # Вправо
+    '\x1b[D': (1, 0, 0, 0),  # Влево
 }
 
-# Добавляем новые биндинги для изменения скорости
+# Команды изменения скорости
 speedBindings = {
     'q': (1.1, 1.1),  # Увеличить линейную и угловую скорость на 10%
     'z': (0.9, 0.9),  # Уменьшить линейную и угловую скорость на 10%
-    'e': (1.0, 1.1),  # Увеличить только угловую скорость на 10%
-    'c': (1.0, 0.9),  # Уменьшить только угловую скорость на 10%
+    'e': (1.0, 1.1),  # Увеличить угловую скорость на 10%
+    'c': (1.0, 0.9),  # Уменьшить угловую скорость на 10%
 }
 
-# Функция для получения нажатой клавиши с терминала
+# Получение нажатой клавиши
 def getKey(settings):
     if sys.platform == 'win32':
         key = msvcrt.getwch()  # Для Windows
     else:
-        tty.setraw(sys.stdin.fileno())  # Переключаем терминал в "сырое" состояние (без буферизации ввода)
+        tty.setraw(sys.stdin.fileno())  # Ввод в "сырое" состояние
         key = sys.stdin.read(1)  # Читаем один символ
-        if key == '\x1b':  # Если первый символ - это '\x1b', возможно, это стрелочная клавиша
-            additional_chars = sys.stdin.read(2)  # Читаем еще два символа, чтобы получить полную клавишу
+        if key == '\x1b':  # Проверяем нажатие стрелок
+            additional_chars = sys.stdin.read(2)
             key += additional_chars
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)  # Возвращаем настройки терминала
     return key
 
-# Функция для сохранения настроек терминала (только для Unix)
+# Сохранение настроек терминала (Unix)
 def saveTerminalSettings():
     if sys.platform == 'win32':
         return None
     return termios.tcgetattr(sys.stdin)
 
-# Функция для восстановления настроек терминала (только для Unix)
+# Восстановление настроек терминала (Unix)
 def restoreTerminalSettings(old_settings):
     if sys.platform == 'win32':
         return
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
 
-# Функция для отображения текущей скорости и угла поворота
-def vels(speed, turn):
-    return f"currently:\tspeed {speed:.2f}\tturn {turn:.2f}"
+# Функция для отображения текущих скоростей и состояния (переписывание нескольких строк)
+def print_status(speed, turn, arm_state, twist):
+    # Очищаем 5 строк перед выводом новой информации
+    print("\033[5F\033[J", end="")  # Очищаем последние 5 строк перед выводом обновлений
+    status_message = (
+        f"Текущие параметры:\n"
+        f"Скорость: {speed:.2f}\tПоворот: {turn:.2f}\tАрмирование: {'Включено' if arm_state else 'Отключено'}\n"
+        f"X: {twist.linear.x:.2f}   Y: {twist.linear.y:.2f}   Z: {twist.linear.z:.2f}\n"
+        f"Yaw: {twist.angular.z:.2f}   Roll: {twist.angular.x:.2f}   Pitch: {twist.angular.y:.2f}"
+    )
+    print(status_message, end='\r')  # Обновляем вывод на той же строке
 
-# Основная функция
+# Основная функция управления
 def main():
-    settings = saveTerminalSettings()  # Сохраняем настройки терминала
+    settings = saveTerminalSettings()
+    rclpy.init()
 
-    rclpy.init()  # Инициализируем ROS 2
+    node = rclpy.create_node('teleop_twist_keyboard')  # Создаём ROS 2 узел
 
-    node = rclpy.create_node('teleop_twist_keyboard')  # Создаем узел ROS 2
-
-    # Создаем профиль QoS для публикации сообщений с наилучшей возможной доставкой
+    # Профиль QoS для публикации сообщений
     qos_profile = QoSProfile(
-        reliability=QoSReliabilityPolicy.BEST_EFFORT,  # Политика надежности: лучший результат
-        durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,  # Политика долговечности: сообщения сохраняются локально до получения подписчиком
-        history=QoSHistoryPolicy.KEEP_LAST,  # Политика истории: хранить только последние сообщения
-        depth=10  # Глубина очереди сообщений
+        reliability=QoSReliabilityPolicy.BEST_EFFORT,
+        durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
+        history=QoSHistoryPolicy.KEEP_LAST,
+        depth=10
     )
 
-    # Создаем издателя сообщений типа Twist на топик /offboard_velocity_cmd
+    # Публикация команд Twist для управления дроном
     pub = node.create_publisher(geometry_msgs.msg.Twist, '/offboard_velocity_cmd', qos_profile)
 
-    arm_toggle = False  # Переменная для отслеживания состояния "арминга" дрона
-    arm_pub = node.create_publisher(std_msgs.msg.Bool, '/arm_message', qos_profile)  # Создаем издателя для арминга/разарминга дрона
+    arm_toggle = False  # Состояние арминга
+    arm_pub = node.create_publisher(std_msgs.msg.Bool, '/arm_message', qos_profile)  # Публикация команд арминга
 
-    # Инициализируем переменные скорости и направления
+    # Инициализация переменных скорости
     speed = 0.5
-    turn = .2
+    turn = 0.2
     x = 0.0
     y = 0.0
     z = 0.0
     th = 0.0
-    status = 0.0
     x_val = 0.0
     y_val = 0.0
     z_val = 0.0
     yaw_val = 0.0
+    twist = geometry_msgs.msg.Twist()
+
+    print(msg)  # Выводим инструкцию
+    print("\033[F\033[K", end="")  # Убираем инструкцию и очищаем строку
 
     try:
-        print(msg)  # Выводим инструкцию
         while True:
-            key = getKey(settings)  # Получаем нажатую клавишу
-            
-            if key in moveBindings.keys():  # Проверяем, связана ли клавиша с движением
+            key = getKey(settings)  # Получаем нажатие клавиш
+
+            if key in moveBindings.keys():
                 x = moveBindings[key][0]
                 y = moveBindings[key][1]
                 z = moveBindings[key][2]
                 th = moveBindings[key][3]
-                
             elif key in speedBindings.keys():
-                # Изменение скорости при нажатии клавиш Q/Z/E/C
+                # Изменение скорости
                 speed *= speedBindings[key][0]
                 turn *= speedBindings[key][1]
-                print(vels(speed, turn))  # Отображаем новые значения скорости и угловой скорости
                 continue
-            
             else:
-                # Если клавиша не соответствует движению, сбрасываем значения
+                # Сброс значений движения
                 x = 0.0
                 y = 0.0
                 z = 0.0
                 th = 0.0
-                if key == '\x03':  # Если нажата клавиша Ctrl+C, выходим из цикла
+                if key == '\x03':  # Выход по Ctrl+C
                     break
 
-            if key == ' ':  # Проверяем, нажата ли пробел для переключения арминга
-                arm_toggle = not arm_toggle  # Переключаем состояние арминга
+            if key == ' ':  # Армирование/дезармирование пробелом
+                arm_toggle = not arm_toggle
                 arm_msg = std_msgs.msg.Bool()
                 arm_msg.data = arm_toggle
-                arm_pub.publish(arm_msg)  # Публикуем сообщение с новым состоянием арминга
-                print(f"Arm toggle is now: {arm_toggle}")
+                arm_pub.publish(arm_msg)
 
-            # Создаем сообщение Twist для задания линейных и угловых скоростей
-            twist = geometry_msgs.msg.Twist()
-            
-            # Рассчитываем новые значения для скоростей на основе нажатых клавиш
+            # Вычисление скоростей и углов
             x_val = (x * speed) + x_val
             y_val = (y * speed) + y_val
             z_val = (z * speed) + z_val
             yaw_val = (th * turn) + yaw_val
+
+            # Обновление сообщения Twist
             twist.linear.x = x_val
             twist.linear.y = y_val
             twist.linear.z = z_val
@@ -175,25 +174,20 @@ def main():
             twist.angular.y = 0.0
             twist.angular.z = yaw_val
 
-            pub.publish(twist)  # Публикуем сообщение Twist на соответствующий топик
-            print("X:",twist.linear.x, "   Y:",twist.linear.y, "   Z:",twist.linear.z, "   Yaw:",twist.angular.z)  # Выводим текущее состояние
+            pub.publish(twist)  # Публикация команд
+
+            # Обновление статуса на экране
+            print_status(speed, turn, arm_toggle, twist)
 
     except Exception as e:
-        print(e)  # Выводим ошибку, если она произошла
+        print(f"Произошла ошибка: {e}")
 
     finally:
-        # При завершении программы отправляем нулевые значения скоростей, чтобы остановить дрон
+        # Остановка дрона при выходе
         twist = geometry_msgs.msg.Twist()
-        twist.linear.x = 0.0
-        twist.linear.y = 0.0
-        twist.linear.z = 0.0
-        twist.angular.x = 0.0
-        twist.angular.y = 0.0
-        twist.angular.z = 0.0
-        pub.publish(twist)  # Публикуем сообщение остановки
+        pub.publish(twist)
+        restoreTerminalSettings(settings)
 
-        restoreTerminalSettings(settings)  # Восстанавливаем настройки терминала
-
-# Запуск основной функции, если скрипт запускается напрямую
+# Запуск основной функции
 if __name__ == '__main__':
     main()

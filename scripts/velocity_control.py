@@ -126,15 +126,15 @@ class OffboardControl(Node):
         self.vehicle_command_publisher_ = self.create_publisher(
             VehicleCommand,
             "/fmu/in/vehicle_command",
-            10  # Глубина очереди для QoS (определяет количество сообщений, которые могут находиться в очереди на отправку)
+            25  # Глубина очереди для QoS (определяет количество сообщений, которые могут находиться в очереди на отправку)
         )
 
         # Создаем таймер для периодической отправки команд на армирование
-        arm_timer_period = 1 # seconds
+        arm_timer_period = 0.1 # seconds
         self.arm_timer_ = self.create_timer(arm_timer_period, self.arm_timer_callback)
 
         # Создаем таймер для цикла управления дроном
-        timer_period = 1 # seconds
+        timer_period = 0.02 # seconds
         self.timer = self.create_timer(timer_period, self.cmdloop_callback)
 
         # Инициализируем переменные состояния дрона и управления
@@ -194,50 +194,50 @@ class OffboardControl(Node):
     # Callback-функция для обработки сообщений об арминге дрона
     def arm_message_callback(self, msg):
         self.arm_message = msg.data
-        self.get_logger().info(f"Received Arm Message: {self.arm_message}")
+        self.get_logger().info(f"Получено сообщение арминга: {self.arm_message}")
 
     # Callback-функция для управления состояниями дрона (автомат)
     def arm_timer_callback(self):
-        self.get_logger().info(f"Current State: {self.current_state}, Arm State: {self.arm_state}, Nav State: {self.nav_state}")
+        self.get_logger().info(f"Текущее состояние: {self.current_state}, состояние арминга: {self.arm_state}, навигационное состояние: {self.nav_state}")
 
         match self.current_state:
             case "IDLE":
                 if self.flightCheck and self.arm_message:
                     self.current_state = "ARMING"
-                    self.get_logger().info("Transitioning to ARMING state")
+                    self.get_logger().info("Переход в состояние АРМИНГ")
 
             case "ARMING":
                 if not self.flightCheck:
                     self.current_state = "IDLE"
-                    self.get_logger().info("Flight check failed, transitioning to IDLE")
+                    self.get_logger().info("Проверка полета не пройдена, переход в состояние IDLE")
                 elif self.arm_state == VehicleStatus.ARMING_STATE_ARMED and self.myCnt > 10:
                     self.current_state = "TAKEOFF"
-                    self.get_logger().info("Armed successfully, transitioning to TAKEOFF")
+                    self.get_logger().info("Армирование успешно, переход в состояние ВЗЛЕТ")
                 self.arm()  # Отправляем команду на армирование
 
             case "TAKEOFF":
                 if not self.flightCheck:
                     self.current_state = "IDLE"
-                    self.get_logger().info("Flight check failed, transitioning to IDLE")
+                    self.get_logger().info("Проверка полета не пройдена, переход в состояние IDLE")
                 elif self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_TAKEOFF:
                     self.current_state = "LOITER"
-                    self.get_logger().info("Takeoff successful, transitioning to LOITER")
+                    self.get_logger().info("Взлет успешен, переход в состояние LOITER")
                 self.arm()  # Отправляем команду на армирование
                 self.take_off()  # Отправляем команду на взлет
 
             case "LOITER": 
                 if not self.flightCheck:
                     self.current_state = "IDLE"
-                    self.get_logger().info("Flight check failed, transitioning to IDLE")
+                    self.get_logger().info("Проверка полета не пройдена, переход в состояние IDLE")
                 elif self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LOITER:
                     self.current_state = "OFFBOARD"
-                    self.get_logger().info("Loiter successful, transitioning to OFFBOARD")
+                    self.get_logger().info("Лоитер успешен, переход в состояние OFFBOARD")
                 self.arm()
 
             case "OFFBOARD":
                 if not self.flightCheck or self.arm_state != VehicleStatus.ARMING_STATE_ARMED or self.failsafe:
                     self.current_state = "IDLE"
-                    self.get_logger().info("Offboard failed, transitioning to IDLE")
+                    self.get_logger().info("Offboard режим не выполнен, переход в состояние IDLE")
                 self.state_offboard()
 
         if self.arm_state != VehicleStatus.ARMING_STATE_ARMED:
@@ -245,56 +245,56 @@ class OffboardControl(Node):
 
         if self.last_state != self.current_state:
             self.last_state = self.current_state
-            self.get_logger().info(f"State changed to: {self.current_state}")
+            self.get_logger().info(f"Состояние изменено на: {self.current_state}")
 
         self.myCnt += 1
 
     # Функции для инициализации состояния
     def state_init(self):
         self.myCnt = 0
-        self.get_logger().info("Initializing state")
+        self.get_logger().info("Инициализация состояния")
 
     # Функция для состояния ARMED
     def state_arming(self):
         self.myCnt = 0
         self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, 1.0)
-        self.get_logger().info("Sending arm command")
+        self.get_logger().info("Отправка команды армирования")
 
     # Функция для состояния TAKEOFF
     def state_takeoff(self):
         self.myCnt = 0
         self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_TAKEOFF, param1=1.0, param7=5)  # param7 - высота в метрах
-        self.get_logger().info("Sending takeoff command")
+        self.get_logger().info("Отправка команды взлёта")
 
     # Функция для состояния LOITER
     def state_loiter(self):
         self.myCnt = 0
-        self.get_logger().info("Loiter Status: Waiting for transition")
+        self.get_logger().info("Статус лоитера: ожидание перехода")
 
     # Функция для состояния OFFBOARD
     def state_offboard(self):
         self.myCnt = 0
         self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_DO_SET_MODE, 1., 6.)
         self.offboardMode = True        
-        self.get_logger().info("Offboard mode engaged")
+        self.get_logger().info("Включен Offboard режим")
 
     # Функция для отправки команды на армирование
     def arm(self):
         self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, 1.0)
-        self.get_logger().info("Arm command sent")
+        self.get_logger().info("Команда армирования отправлена")
 
     # Функция для отправки команды на взлет на заданную высоту
     def take_off(self):
         self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_TAKEOFF, param1=1.0, param7=5.0)  # param7 - высота в метрах
-        self.get_logger().info("Takeoff command sent")
+        self.get_logger().info("Команда взлёта отправлена")
 
     # Публикует команду на топик /fmu/in/vehicle_command
     def publish_vehicle_command(self, command, param1=0.0, param2=0.0, param7=0.0):
         msg = VehicleCommand()
         msg.param1 = param1  # Первичный параметр команды. Его значение зависит от типа команды (например, для команды армирования это может быть 1.0 для арма и 0.0 для дизарма)
         msg.param2 = param2  # Вторичный параметр команды. Используется в некоторых командах для дополнительной информации (например, для некоторых команд это может быть направление или время)
-        msg.param7 = param7  # Значение высоты для команды на взлет (например, при взлете указывает желаемую высоту в метрах)
-        msg.command = command  # ID команды (например, команда армирования, взлета, перехода в Offboard и т.д.)
+        msg.param7 = param7  # Значение высоты для команды на взлет (например, при взлёте указывает желаемую высоту в метрах)
+        msg.command = command  # ID команды (например, команда армирования, взлёта, перехода в Offboard и т.д.)
         msg.target_system = 1  # Система, которая должна выполнить команду (обычно 1 для основного контроллера)
         msg.target_component = 1  # Компонент, который должен выполнить команду (обычно 1 для основного компонента)
         msg.source_system = 1  # Система, отправляющая команду (указываем 1, если команда отправляется с основного контроллера)
@@ -308,16 +308,16 @@ class OffboardControl(Node):
     # Callback-функция для получения и установки значений статуса дрона
     def vehicle_status_callback(self, msg):
         if msg.nav_state != self.nav_state:
-            self.get_logger().info(f"NAV_STATUS changed: {msg.nav_state}")
+            self.get_logger().info(f"NAV_STATUS изменён: {msg.nav_state}")
         
         if msg.arming_state != self.arm_state:
-            self.get_logger().info(f"ARM_STATUS changed: {msg.arming_state}")
-
+            self.get_logger().info(f"ARM_STATUS изменён: {msg.arming_state}")
+            
         if msg.failsafe != self.failsafe:
-            self.get_logger().info(f"FAILSAFE status changed: {msg.failsafe}")
+            self.get_logger().info(f"Статус FAILSAFE изменён: {msg.failsafe}")
         
         if msg.pre_flight_checks_pass != self.flightCheck:
-            self.get_logger().info(f"FlightCheck status changed: {msg.pre_flight_checks_pass}")
+            self.get_logger().info(f"Статус проверки полета изменён: {msg.pre_flight_checks_pass}")
 
         self.nav_state = msg.nav_state
         self.arm_state = msg.arming_state
@@ -327,15 +327,31 @@ class OffboardControl(Node):
     # Callback-функция для обработки команд Twist из Teleop и преобразования их в систему координат FLU
     def offboard_velocity_callback(self, msg):
         # Логирование полученного сообщения Twist
-        # self.get_logger().info(f"Received Twist message: linear=({msg.linear.x}, {msg.linear.y}, {msg.linear.z}), angular=({msg.angular.x}, {msg.angular.y}, {msg.angular.z})")
+        self.get_logger().info(f"Получено сообщение Twist: линейные=({msg.linear.x}, {msg.linear.y}, {msg.linear.z}), угловые=({msg.angular.x}, {msg.angular.y}, {msg.angular.z})")
         
-        # Преобразование NED -> FLU
-        self.velocity.x = -msg.linear.y
-        self.velocity.y = msg.linear.x
-        self.velocity.z = -msg.linear.z
-        self.yaw = msg.angular.z
+        # Преобразование NED (North-East-Down) -> FLU (Forward-Left-Up)
+        # В системе NED оси координат:
+        # X - вперед, Y - вправо, Z - вниз
+        # В системе FLU:
+        # X - вперед, Y - влево, Z - вверх
 
-        # self.get_logger().info(f"Converted velocity: x={self.velocity.x}, y={self.velocity.y}, z={self.velocity.z}, yaw={self.yaw}")
+        # Скорости по осям X, Y, Z
+        self.velocity.x = msg.linear.x  # Скорость вперед (FLU X)
+        self.velocity.y = -msg.linear.y  # Скорость влево (FLU -Y)
+        self.velocity.z = -msg.linear.z  # Скорость вверх (FLU -Z)
+
+        # Угловые скорости по осям X, Y, Z
+        # Эти углы определяют вращение дрона вокруг каждой из осей:
+        # X (roll) - вращение вокруг продольной оси дрона
+        # Y (pitch) - вращение вокруг поперечной оси дрона
+        # Z (yaw) - вращение вокруг вертикальной оси дрона
+        self.roll = msg.angular.x  # Roll (вращение вокруг оси X)
+        self.pitch = msg.angular.y  # Pitch (вращение вокруг оси Y)
+        self.yaw = msg.angular.z  # Yaw (вращение вокруг оси Z)
+
+        # Логируем преобразованные значения для проверки
+        self.get_logger().info(f"Преобразовано в координатную систему FLU: скорость=({self.velocity.x}, {self.velocity.y}, {self.velocity.z}), roll={self.roll}, pitch={self.pitch}, yaw={self.yaw}")
+
 
     # Callback-функция для получения текущих значений траектории и извлечения угла рыскания
     def attitude_callback(self, msg):
@@ -357,7 +373,7 @@ class OffboardControl(Node):
             offboard_msg.velocity = True
             offboard_msg.acceleration = False
             self.publisher_offboard_mode.publish(offboard_msg)
-            self.get_logger().info("Published OffboardControlMode")
+            self.get_logger().info("Опубликован OffboardControlMode")
 
             # Вычисляем скорость в системе координат мира
             cos_yaw = np.cos(self.trueYaw)
@@ -381,7 +397,7 @@ class OffboardControl(Node):
             trajectory_msg.yawspeed = self.yaw
 
             self.publisher_trajectory.publish(trajectory_msg)
-            self.get_logger().info(f"Published TrajectorySetpoint: velocity=({velocity_world_x}, {velocity_world_y}, {self.velocity.z}), yaw={self.yaw}")
+            self.get_logger().info(f"Опубликован TrajectorySetpoint: скорость=({velocity_world_x}, {velocity_world_y}, {self.velocity.z}), yaw={self.yaw}")
 
 # Главная функция для запуска узла
 def main(args=None):
