@@ -67,11 +67,11 @@ RUN ldconfig /usr/local/lib/
 
 # set work directory
 ENV WORKSPACE /workspace/src
-RUN mkdir -p $WORKSPACE/aerial_drone_base
+RUN mkdir -p $WORKSPACE/dron_px4_ros2_docker
 WORKDIR $WORKSPACE
 
 # copy project
-COPY . $WORKSPACE/aerial_drone_base
+COPY . $WORKSPACE/dron_px4_ros2_docker
 
 # **************************************************************************** #
 

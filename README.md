@@ -17,15 +17,15 @@ The project was inspired by the following sources:
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/AntonSHBK/aerial_drone_base
-   cd aerial_drone_base/docker
+   git clone https://github.com/AntonSHBK/dron_px4_ros2_docker
+   cd dron_px4_ros2_docker/docker
 
    ```
 
 2. **Build the Workspace**:
    ```bash
    colcon build --packages-select px4_msgs px4_ros_com
-   colcon build --packages-select aerial_drone_base
+   colcon build --packages-select dron_px4_ros2_docker
    ```
 
 3. **Source the Workspace**:

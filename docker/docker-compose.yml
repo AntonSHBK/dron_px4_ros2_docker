@@ -1,4 +1,4 @@
-name: aerial_drone
+name: dron_px4_ros2_docker
 
 services:
   ros-humble-master:
@@ -8,7 +8,7 @@ services:
       context: ../
       dockerfile: ./docker/Dockerfile.ros_px4
     volumes:
-      - ../:/workspace/src/aerial_drone_base 
+      - ../:/workspace/src/dron_px4_ros2_docker 
     env_file:
       - ./.env
     ports:

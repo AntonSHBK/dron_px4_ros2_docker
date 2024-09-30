@@ -28,10 +28,10 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 
 # include directories
-include_directories(include)
+# include_directories(include)
 
 # create a executable
-add_executable(dron_base src/dron_base.cpp)
+# add_executable(dron_base src/dron_base.cpp)
 
 
 # # linking libraries
