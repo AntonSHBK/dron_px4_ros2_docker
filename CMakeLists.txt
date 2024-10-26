@@ -34,12 +34,6 @@ find_package(visualization_msgs REQUIRED)
 # add_executable(dron_base src/dron_base.cpp)
 
 
-# # linking libraries
-ament_target_dependencies(
-  dron_base
-  rclcpp
-  std_msgs
-)
 
 # Install Python modules
 install(
@@ -61,10 +55,6 @@ install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}/
 )
 
-# Install urdf files
-install(DIRECTORY urdf
-  DESTINATION share/${PROJECT_NAME}/
-)
 
 # Install rviz files
 install(DIRECTORY rviz

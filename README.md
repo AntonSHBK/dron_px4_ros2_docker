@@ -25,7 +25,7 @@ The project was inspired by the following sources:
 2. **Build the Workspace**:
    ```bash
    colcon build --packages-select px4_msgs px4_ros_com
-   colcon build --packages-select dron_px4_ros2_docker
+   colcon build --packages-select aerial_drone_base
    ```
 
 3. **Source the Workspace**:
