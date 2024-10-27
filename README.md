@@ -42,6 +42,11 @@ Launch the ROS 2 nodes required for controlling the drone:
 ros2 launch aerial_drone_base aerial_drone_base.py
 ```
 
+Run a script to collect data from a drone 
+```bash
+ros2 run aerial_drone_base data_save.py
+```
+
 This launch file will start the following nodes:
 - **processes_node**: Manages different background processes such as the PX4 SITL simulation.
 - **control_node**: Handles the offboard control and sends commands to PX4.

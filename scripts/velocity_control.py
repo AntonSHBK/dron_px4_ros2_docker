@@ -198,7 +198,7 @@ class OffboardControl(Node):
 
     # Callback-функция для управления состояниями дрона (автомат)
     def arm_timer_callback(self):
-        self.get_logger().info(f"Текущее состояние: {self.current_state}, состояние арминга: {self.arm_state}, навигационное состояние: {self.nav_state}")
+        # self.get_logger().info(f"Текущее состояние: {self.current_state}, состояние арминга: {self.arm_state}, навигационное состояние: {self.nav_state}")
 
         match self.current_state:
             case "IDLE":

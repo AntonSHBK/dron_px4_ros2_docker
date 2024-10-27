@@ -42,6 +42,7 @@ install(
   PROGRAMS scripts/processes.py
   PROGRAMS scripts/velocity_control.py
   PROGRAMS scripts/inform_node.py
+  PROGRAMS scripts/data_save.py
   DESTINATION lib/${PROJECT_NAME}  # Указываем путь установки
 )
 
