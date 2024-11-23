@@ -1,7 +1,4 @@
 # Aerial Drone Control with ROS 2 and PX4
-Этот проект предоставляет средства для управления беспилотными летательными аппаратами (БПЛА) с использованием QGroundControl через Docker. QGroundControl предоставляет мощный и гибкий интерфейс для планирования миссий, мониторинга полётов и настройки параметров БПЛА в реальном времени.
-
-## Overview
 
 This project provides a ROS 2 interface for controlling a drone using the PX4 autopilot in offboard mode. It includes nodes for keyboard control, offboard control, visualization, and more. The setup is primarily designed for simulation with PX4 SITL (Software In The Loop) and can be extended for use with real drones.
 
