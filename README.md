@@ -20,6 +20,7 @@ The project was inspired by the following sources:
    git clone https://github.com/AntonSHBK/dron_px4_ros2_docker
    cd dron_px4_ros2_docker/docker
 
+   docker-compose up --build
    ```
 
 2. **Build the Workspace**:
