@@ -95,3 +95,11 @@ It's important to ensure that the PX4 versions are consistent across all compone
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+
+## Contacts
+
+For questions or support, please contact:
+
+- **Name**: Pisarenko Anton
+- **Email**: anton42@yandex.ru
+- **Telegram**: [antonSHBK](https://t.me/antonSHBK)
